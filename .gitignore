@@ -34,3 +34,9 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 desktop.ini
+<<<<<<< HEAD
+=======
+
+# --- Локальні налаштування Claude Code ---
+.claude/
+>>>>>>> 65d14a53969c90222b229e814ec86ae0c83f130b
