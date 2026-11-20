@@ -1,0 +1,45 @@
+:root {
+  --bg: #05010f;
+  --cyan: #00f0ff;
+  --magenta: #ff2bd6;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+  /* Stop pull-to-refresh, scroll chaining and double-tap zoom while playing. */
+  overscroll-behavior: none;
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#game {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+#game canvas {
+  display: block;
+  outline: none;
+  touch-action: none;
+  box-shadow: 0 0 40px rgba(157, 77, 255, 0.35);
+}

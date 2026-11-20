@@ -1,0 +1,36 @@
+# --- Залежності ---
+# Встановлюються через `npm install`
+node_modules/
+
+# --- Артефакти збірки ---
+# Результат `npm run build` (Vite)
+dist/
+
+# --- Логи ---
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# --- Локальні змінні середовища ---
+.env
+.env.*
+!.env.example
+
+# --- Кеш інструментів ---
+.vite/
+.cache/
+*.tsbuildinfo
+
+# --- Редактори та IDE ---
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+
+# --- Системні файли ---
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,44 @@
+/* Pre-JS splash and fatal-error messages (the in-game UI itself is drawn by Phaser). */
+#boot-splash {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font: 700 28px/1 "Orbitron", "Segoe UI", system-ui, sans-serif;
+  letter-spacing: 0.12em;
+  color: var(--cyan);
+  text-shadow: 0 0 14px var(--cyan);
+}
+
+#boot-splash span {
+  font-size: 13px;
+  color: var(--magenta);
+  text-shadow: 0 0 8px var(--magenta);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.fatal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 24px;
+  text-align: center;
+  color: #fff;
+  font: 600 18px/1.4 system-ui, sans-serif;
+  background: var(--bg);
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #boot-splash span {
+    animation: none;
+  }
+}
