@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS, DIFFICULTY, GAME_STATE, PLAYER, SCENES, LAYOUT } from '../constants.js';
+import { COLORS, DIFFICULTY, GAME_STATE, PLAYER, SCENES, SCORING, LAYOUT } from '../constants.js';
 import { Player } from '../entities/Player.js';
 import { SpawnManager } from '../systems/SpawnManager.js';
 import { ScoreManager } from '../systems/ScoreManager.js';
@@ -12,6 +12,8 @@ import { createButton, createSoundToggle, fadeIn, makeText, registerCleanup, tra
 const DEATH_DELAY_MS = 900;
 const COUNTDOWN_STEP_MS = 650;
 const MAX_FRAME_MS = 50; // clamp huge deltas (tab switches, breakpoints)
+// Distance units covered before the first obstacle spawns (~39): shorter abandoned runs aren't tracked.
+const MIN_TRACKED_DISTANCE = (DIFFICULTY.INITIAL_DELAY * DIFFICULTY.LEVELS[0].speed) / SCORING.PX_PER_UNIT;
 
 export class GameScene extends Phaser.Scene {
   constructor() {
@@ -28,6 +30,7 @@ export class GameScene extends Phaser.Scene {
     this.hudCache = { score: -1, best: -1, level: -1, crystals: -1 };
     this.pauseOverlay = null;
     this.debugAccum = 0;
+    this.runRecorded = false; // analytics: each run is recorded exactly once
   }
 
   create() {
@@ -194,7 +197,10 @@ export class GameScene extends Phaser.Scene {
   #createLifecycleHooks() {
     // Auto-pause when the tab is hidden, persist the score when the page goes away.
     const onHidden = () => this.pause();
-    const onPageHide = () => this.score?.commit();
+    const onPageHide = () => {
+      this.score?.commit();
+      this.#recordRun(false);
+    };
     this.game.events.on(Phaser.Core.Events.HIDDEN, onHidden);
     window.addEventListener('pagehide', onPageHide);
 
@@ -204,6 +210,23 @@ export class GameScene extends Phaser.Scene {
       this.game.events.off(Phaser.Core.Events.HIDDEN, onHidden);
       window.removeEventListener('pagehide', onPageHide);
       this.score?.commit();
+      this.#recordRun(false); // left the scene (quit / restart) without crashing
+    });
+  }
+
+  /**
+   * Records the run in analytics once. A run abandoned before the first obstacle could even
+   * appear carries no signal, so it is skipped (collisions are always recorded).
+   */
+  #recordRun(collided) {
+    if (this.runRecorded || !this.score) return;
+    this.runRecorded = true;
+    if (!collided && this.score.distance < MIN_TRACKED_DISTANCE) return;
+    this.registry.get('analytics')?.recordRun({
+      score: this.score.score,
+      distance: this.score.distance,
+      crystals: this.score.crystals,
+      collided,
     });
   }
 
@@ -303,6 +326,7 @@ export class GameScene extends Phaser.Scene {
     this.cameras.main.flash(120, 255, 43, 214);
     this.deathFx.explode(36, p.x, p.body.center.y);
     this.score.commit();
+    this.#recordRun(true);
 
     const result = {
       score: this.score.score,

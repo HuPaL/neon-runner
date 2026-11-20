@@ -138,6 +138,7 @@ export const PATTERNS = Object.freeze({
 });
 
 export const STORAGE_KEY = 'neonrunner.v1';
+export const ANALYTICS_KEY = 'neonrunner.analytics.v1';
 
 export const TRANSITION_MS = 250;
 

@@ -27,6 +27,10 @@ _Add your own captures here (run the game, press `PrtScn`, drop files in `docs/`
 - Procedural audio: music loop + jump / crystal / hit / click / level-up SFX, global mute (persisted)
 - Pause (ESC / P / button, also auto-pauses on tab hide) with a 3-2-1 resume countdown
 - Responsive: desktop, tablet and phone, landscape and portrait, touch + keyboard
+- Local gameplay analytics: games played, average score / distance / crystals, collision count,
+  collision rate (share of games ending in a crash) and collisions per 1000 m. Shown on the
+  **STATS** screen in the menu (`S` key or button). Data stays in `localStorage`
+  (`neonrunner.analytics.v1`); nothing is sent anywhere
 - Debug overlay (FPS, speed, pool usage): open with `?debug` in the URL, toggle with `F3`
 
 ## Tech stack
@@ -77,6 +81,7 @@ src/
       DifficultyManager.js  pure speed/interval/level curve
       ScoreManager.js     pure score/best/record logic
       AudioManager.js     Web Audio music + SFX, autoplay-safe
+      Analytics.js        pure local stats (games, averages, collision rate), own storage key
       Patterns.js         pattern geometry + jump simulator (used by tests)
     utils/                Storage, Layout, TextureFactory, Background, ui helpers, GameState
   styles/                 main.css (page), ui.css (boot splash / fatal error)

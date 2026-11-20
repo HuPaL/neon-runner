@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { GAME_STATE, SCENES } from '../constants.js';
 import { createStorage } from '../utils/Storage.js';
 import { AudioManager } from '../systems/AudioManager.js';
+import { createAnalytics } from '../systems/Analytics.js';
 import { setGameState } from '../utils/GameState.js';
 import { syncLayout } from '../utils/Layout.js';
 
@@ -20,6 +21,7 @@ export class BootScene extends Phaser.Scene {
       const audio = new AudioManager(storage);
       audio.attachUnlockListeners();
       reg.set('storage', storage);
+      reg.set('analytics', createAnalytics());
       reg.set('audio', audio);
       this.game.events.once(Phaser.Core.Events.DESTROY, () => audio.destroy());
     }

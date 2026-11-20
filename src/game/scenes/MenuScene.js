@@ -37,7 +37,14 @@ export class MenuScene extends Phaser.Scene {
 
     const btnY = portrait ? H * 0.42 : H * 0.5;
     createButton(this, W / 2, btnY, 'PLAY', () => this.#start(), { width: 260, height: 64, fontSize: 28, color: COLORS.CYAN }).setDepth(50);
-    createSoundToggle(this, W / 2, btnY + 78).setDepth(50);
+    // Two small buttons side by side so the help panel below keeps its place.
+    createButton(this, W / 2 - 101, btnY + 78, 'STATS', () => this.#toggleStats(), {
+      width: 190,
+      height: 44,
+      fontSize: 16,
+      color: COLORS.YELLOW,
+    }).setDepth(50);
+    createSoundToggle(this, W / 2 + 101, btnY + 78).setDepth(50);
 
     const help = [
       'SPACE / UP / W  -  JUMP (PRESS TWICE TO DOUBLE JUMP)',
@@ -55,9 +62,14 @@ export class MenuScene extends Phaser.Scene {
       .setStrokeStyle(1, COLORS.PURPLE, 0.6)
       .setDepth(50);
 
+    this.statsPanel = null;
     this.input.keyboard.on('keydown-ENTER', () => this.#start());
     this.input.keyboard.on('keydown-SPACE', (e) => {
       if (!e.repeat) this.#start();
+    });
+    this.input.keyboard.on('keydown-ESC', () => this.#hideStats());
+    this.input.keyboard.on('keydown-S', (e) => {
+      if (!e.repeat) this.#toggleStats();
     });
     this.input.keyboard.on('keydown-M', () => audio.toggleMute());
     this.input.keyboard.addCapture('SPACE');
@@ -71,7 +83,54 @@ export class MenuScene extends Phaser.Scene {
   }
 
   #start() {
+    if (this.statsPanel) return; // Enter/Space while the stats panel is open must not start a run
     transitionTo(this, SCENES.GAME);
+  }
+
+  #toggleStats() {
+    if (this.statsPanel) this.#hideStats();
+    else this.#showStats();
+  }
+
+  #hideStats() {
+    this.statsPanel?.destroy();
+    this.statsPanel = null;
+  }
+
+  #showStats() {
+    const { width: W, height: H } = this.scale;
+    const portrait = isPortrait(this);
+    const s = this.registry.get('analytics').getStats();
+    const pct = (v) => `${(v * 100).toFixed(0)}%`;
+    const rows = [
+      ['GAMES PLAYED', String(s.games)],
+      ['AVG SCORE', String(s.avgScore)],
+      ['AVG DISTANCE', `${s.avgDistance} m`],
+      ['AVG CRYSTALS', String(s.avgCrystals)],
+      ['COLLISIONS', String(s.collisions)],
+      ['COLLISION RATE', s.games ? `${pct(s.collisionRate)} of games` : '-'],
+      ['PER 1000 m', s.totalDistance ? s.collisionsPer1000.toFixed(1) : '-'],
+    ];
+    const panelW = Math.min(W - 40, 520);
+    const rowH = portrait ? 34 : 30;
+    const panelH = 120 + rows.length * rowH + 70;
+    const cy = H / 2;
+    const items = [
+      // Full-screen interactive backdrop: swallows taps so buttons below stay untouched.
+      this.add.rectangle(W / 2, H / 2, W, H, COLORS.BG, 0.82).setInteractive(),
+      this.add.rectangle(W / 2, cy, panelW, panelH, COLORS.PANEL, 0.95).setStrokeStyle(2, COLORS.YELLOW, 0.9),
+      makeText(this, W / 2, cy - panelH / 2 + 40, 'STATISTICS', 34, COLORS.CSS.YELLOW, {
+        shadow: { color: COLORS.CSS.YELLOW, blur: 16, fill: true },
+      }),
+    ];
+    let y = cy - panelH / 2 + 100;
+    for (const [label, value] of rows) {
+      items.push(makeText(this, W / 2 - panelW / 2 + 28, y, label, 16, '#b9aee0').setOrigin(0, 0.5));
+      items.push(makeText(this, W / 2 + panelW / 2 - 28, y, value, 18, COLORS.CSS.WHITE).setOrigin(1, 0.5));
+      y += rowH;
+    }
+    items.push(createButton(this, W / 2, cy + panelH / 2 - 42, 'CLOSE', () => this.#hideStats(), { width: 180, height: 44, fontSize: 18, color: COLORS.YELLOW }));
+    this.statsPanel = this.add.container(0, 0, items).setDepth(300);
   }
 
   update(_t, delta) {
