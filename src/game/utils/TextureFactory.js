@@ -6,6 +6,14 @@ import { COLORS, CRYSTAL, GLOW_PAD, LAYOUT, OBSTACLES, PLAYER } from '../constan
  * No external art is required, so the game can never fail on a missing asset.
  */
 
+/**
+ * Skyline tiles are baked at this fraction of their on-screen size and shown with
+ * tileScale = 1 / SKYLINE_SCALE (see Background.js). Cuts their GPU memory by 75%.
+ */
+export const SKYLINE_SCALE = 0.5;
+/** The sky is a smooth gradient stretched to the screen, so it is baked at half size. */
+const SKY_SCALE = 0.5;
+
 const css = (n) => `#${n.toString(16).padStart(6, '0')}`;
 
 function mulberry32(seed) {
@@ -62,7 +70,7 @@ export function generateTextures(scene) {
   });
 
   // Sky gradient with stars (stretched to the screen size at use).
-  canvasTexture(scene, 'sky', 512, maxH, (c, w, h) => {
+  canvasTexture(scene, 'sky', 512 * SKY_SCALE, maxH * SKY_SCALE, (c, w, h) => {
     const g = c.createLinearGradient(0, 0, 0, h);
     g.addColorStop(0, '#05010f');
     g.addColorStop(0.55, '#1a0638');
@@ -75,7 +83,7 @@ export function generateTextures(scene) {
       c.globalAlpha = 0.2 + rnd() * 0.6;
       c.fillStyle = '#fff';
       const y = rnd() * h * 0.6;
-      c.fillRect(rnd() * w, y, 1.5, 1.5);
+      c.fillRect(rnd() * w, y, 1, 1);
     }
     c.globalAlpha = 1;
   });
@@ -110,13 +118,16 @@ export function generateTextures(scene) {
       buildings.push({ x, w, h });
       x += w + (rnd() < 0.3 ? 6 : 0);
     }
-    canvasTexture(scene, key, W, height, (c) => {
+    const S = SKYLINE_SCALE;
+    canvasTexture(scene, key, W * S, height * S, (c) => {
+      c.scale(S, S);
       c.fillStyle = body;
       for (const b of buildings) c.fillRect(b.x, height - b.h, b.w, b.h);
     });
-    canvasTexture(scene, litKey, W, height, (c) => {
+    canvasTexture(scene, litKey, W * S, height * S, (c) => {
+      c.scale(S, S);
       const r2 = mulberry32(seed + 1);
-      glow(c, lightColor, 8);
+      glow(c, lightColor, 8 * S); // shadowBlur ignores the transform; keep the on-screen glow size
       c.strokeStyle = edge;
       c.lineWidth = 2;
       c.fillStyle = lightColor;

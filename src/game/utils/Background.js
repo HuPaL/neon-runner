@@ -1,4 +1,5 @@
 import { LAYOUT } from '../constants.js';
+import { SKYLINE_SCALE } from './TextureFactory.js';
 
 /**
  * Multi-layer parallax city. Used by the menu (slow constant scroll) and the game
@@ -15,8 +16,10 @@ export class Background {
 
     const layer = (key, factor, depth) => {
       const tex = scene.textures.get(key).getSourceImage();
-      const ts = scene.add.tileSprite(0, groundY - tex.height, W, tex.height, key).setOrigin(0, 0).setDepth(depth);
-      return { ts, factor };
+      const height = tex.height / SKYLINE_SCALE; // on-screen height
+      const ts = scene.add.tileSprite(0, groundY - height, W, height, key).setOrigin(0, 0).setDepth(depth);
+      ts.setTileScale(1 / SKYLINE_SCALE);
+      return { ts, factor: factor / SKYLINE_SCALE }; // tilePosition is in texture space
     };
     this.layers = [
       layer('bg_far', 0.1, -90),

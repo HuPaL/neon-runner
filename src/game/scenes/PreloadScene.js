@@ -3,6 +3,7 @@ import { COLORS, GAME_STATE, SCENES } from '../constants.js';
 import { setGameState } from '../utils/GameState.js';
 import { generateTextures, createAnimations } from '../utils/TextureFactory.js';
 import { makeText } from '../utils/ui.js';
+import { logTextureReport, timeIt } from '../utils/AssetStats.js';
 
 /**
  * Optional external assets. The game ships none (everything is generated), but the
@@ -38,8 +39,9 @@ export class PreloadScene extends Phaser.Scene {
 
   create() {
     this.#setProgress(1);
-    generateTextures(this);
+    const ms = timeIt(() => generateTextures(this));
     createAnimations(this);
+    if (import.meta.env.DEV) logTextureReport(ms, this.textures);
     this.time.delayedCall(MIN_DISPLAY_MS, () => this.scene.start(SCENES.MENU));
   }
 
